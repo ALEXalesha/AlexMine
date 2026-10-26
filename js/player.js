@@ -179,11 +179,13 @@
     const canSprint = input.f && (creative || this.food > 6) && !this.sneaking;
     if (!canSprint || len === 0) this.sprinting = false;
     else if (input.sprint) this.sprinting = true;
-    // Плавание лёжа (как в оригинале): в воде бег + вперёд - герой ложится по взгляду. Кончилось
-    // (отпустил бег, вышел из воды, голод) - встаёт, но только если над головой есть место:
-    // в щели высотой в блок лежит, пока не выплывет на простор.
+    // Плавание лёжа: в глубокой воде (голова под водой) «вперёд» - герой сразу ложится
+    // по взгляду и гребёт, бег только ускоряет (владелец 26.10: «в оригинале плывёт сразу», а тут - только с Ctrl).
+    // На мелководье лёжа - только с бегом, как раньше. Кончилось (вышел из воды, отпустил «вперёд») - встаёт,
+    // но только если над головой есть место: в щели высотой в блок лежит, пока не выплывет на простор.
     const water = this.inWater && !this.inLava && !this.flying;
-    const strokes = water && this.sprinting && !!input.f;
+    const deep = water && this.headInWater;                  // голова под водой - и у дна тоже
+    const strokes = water && !!input.f && (this.sprinting || deep);
     if (strokes) this.swimming = true;
     else if (this.swimming && !boxHits(world, [this.pos.x - HALF, this.pos.y, this.pos.z - HALF, this.pos.x + HALF, this.pos.y + HEIGHT, this.pos.z + HALF])) this.swimming = false;
     this.swimStroke = strokes;
@@ -238,10 +240,10 @@
       }
     }
     this.jumpCool = Math.max(0, (this.jumpCool || 0) - dt);
-    // лёжа гребём по взгляду (вниз - ныряем, вверх - всплываем), быстрее обычного плавания
+    // лёжа гребём по взгляду (вниз - ныряем, вверх - всплываем); с бегом - быстро, без бега - как обычное плавание
     if (strokes) {
       const f = this.forward(), ks = 1 - Math.exp(-8 * dt);
-      let sp = SPEED.swimFast * (VX.brewing ? 1 + 0.2 * VX.brewing.level('speed') : 1);
+      let sp = (this.sprinting ? SPEED.swimFast : SPEED.swim) * (VX.brewing ? 1 + 0.2 * VX.brewing.level('speed') : 1);
       this.vel.x += (f.x * sp - this.vel.x) * ks; this.vel.y += (f.y * sp - this.vel.y) * ks; this.vel.z += (f.z * sp - this.vel.z) * ks;
     }
 
