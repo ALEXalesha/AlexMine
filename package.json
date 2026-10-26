@@ -1,0 +1,17 @@
+{
+  "name": "alexmine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cube World (Кубический мир): a voxel sandbox in one HTML page, three.js, works offline",
+  "author": "ALEXalesha",
+  "license": "MIT",
+  "homepage": "https://alexalesha.github.io/AlexMine/",
+  "repository": { "type": "git", "url": "git+https://github.com/ALEXalesha/AlexMine.git" },
+  "scripts": {
+    "test": "playwright test",
+    "screenshots": "node tools/screenshots.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}
