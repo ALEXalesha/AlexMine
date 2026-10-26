@@ -374,10 +374,12 @@ test.describe('minecraft_clone_3d_1: Esc-Esc как просил владеле�
     expect(t1).not.toMatch(/нажмите|щёлкните|click/i);
     expect(t2).not.toMatch(/нажмите|щёлкните|click/i);
     // клавиатура работает до щелчка
+    // Ждём пройденный путь, а не 400 мс: шаг считается по кадрам, а безголовый Chromium без
+    // видеокарты рисует этот мир 5-10 кадров в секунду - за 400 мс герой успевал 0.1 блока.
     const z0 = await page.evaluate(() => __voxel.player.pos.z);
-    await page.keyboard.down('KeyW'); await page.waitForTimeout(400); await page.keyboard.up('KeyW');
-    const z1 = await page.evaluate(() => __voxel.player.pos.z);
-    expect(z0 - z1).toBeGreaterThan(0.5);
+    await page.keyboard.down('KeyW');
+    await expect.poll(() => page.evaluate((z) => z - __voxel.player.pos.z, z0), { timeout: 15_000 }).toBeGreaterThan(0.5);
+    await page.keyboard.up('KeyW');
     // первый щелчок, но браузер ещё отказывает (пауза после Esc) - молча, без надписи; второй щелчок - захват
     // творческий: любой щелчок, дошедший до игры, сломал бы блок сразу - так видно, что щелчки захвата не ломают
     await page.evaluate(() => { __voxel.game.mode = 'creative'; __voxel.look(0, -1.2); });
